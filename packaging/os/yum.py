@@ -124,7 +124,13 @@ options:
     default: "yes"
     choices: ["yes", "no"]
     version_added: "2.1"
-
+  excludedocs:
+    description:
+      - Install a package without documentation files when state="present".
+    required: false
+    default: "no"
+    choices: ["yes", "no"]
+    version_added: "2.2"
 notes:
   - When used with a loop of package names in a playbook, ansible optimizes
     the call to the yum module.  Instead of calling the module with a single
