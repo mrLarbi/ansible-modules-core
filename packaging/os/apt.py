@@ -197,7 +197,7 @@ EXAMPLES = '''
 - name: Install a .deb package from the internet.
   apt:
     deb: https://example.com/python-ppq_0.1-1_all.deb
-    
+
 - Install nginx. If another process is using apt, wait a maximum of 60 seconds.
   apt: 
     name=nginx 
