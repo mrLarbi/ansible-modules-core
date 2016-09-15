@@ -116,6 +116,12 @@ options:
     required: false
     default: false
     version_added: "2.1"
+  lock_wait:
+    description:
+      - Number of seconds to wait for the dpkg lock (if another process is using apt).
+    required: false
+    default: 0
+    version_added: "2.3"
 requirements:
    - python-apt (python 2)
    - python3-apt (python 3)
@@ -191,6 +197,12 @@ EXAMPLES = '''
 - name: Install a .deb package from the internet.
   apt:
     deb: https://example.com/python-ppq_0.1-1_all.deb
+    
+- Install nginx. If another process is using apt, wait a maximum of 60 seconds.
+  apt: 
+    name=nginx 
+    state=present 
+    lock_wait=60
 '''
 
 RETURN = '''
@@ -227,6 +239,7 @@ import os
 import re
 import sys
 import time
+import subprocess
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.pycompat24 import get_exception
@@ -729,6 +742,17 @@ def download(module, deb):
 
     return deb
 
+def wait_for_lock(module, time_to_wait):
+    if(time_to_wait <= 0):
+        return
+    
+    for i in range(1, time_to_wait):
+        rc = subprocess.call(["fuser", "/var/lib/dpkg/lock"])
+        if(rc == 1):
+            return
+        elif(rc == 0):
+            time.sleep(1)
+    module.fail_json(msg="Timeout : Could not acquire dpkg lock")
 
 def get_cache_mtime():
     """Return mtime of a valid apt cache file.
@@ -797,6 +821,7 @@ def main():
             autoremove = dict(type='bool', default=False, aliases=['autoclean']),
             only_upgrade = dict(type='bool', default=False),
             allow_unauthenticated = dict(default='no', aliases=['allow-unauthenticated'], type='bool'),
+            lock_wait = dict(default=0, type='int'),
         ),
         mutually_exclusive = [['package', 'upgrade', 'deb']],
         required_one_of = [['package', 'upgrade', 'update_cache', 'deb']],
@@ -849,6 +874,8 @@ def main():
     # Get the cache object
     cache = get_cache(module)
 
+    wait_for_lock(module, p['lock_wait'])
+    
     try:
         if p['default_release']:
             try:
