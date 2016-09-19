@@ -51,8 +51,7 @@ def daemonize_self():
         e = sys.exc_info()[1]
         sys.exit("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
 
-    # decouple from parent environment
-    os.chdir("/")
+    # decouple from parent environment (does not chdir / to keep the directory context the same as for non async tasks)
     os.setsid()
     os.umask(int('022', 8))
 

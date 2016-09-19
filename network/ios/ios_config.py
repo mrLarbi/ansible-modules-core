@@ -63,7 +63,7 @@ options:
         a change needs to be made.  This allows the playbook designer
         the opportunity to perform configuration commands prior to pushing
         any changes without affecting how the set of commands are matched
-        against the system
+        against the system.
     required: false
     default: null
   after:
@@ -94,7 +94,7 @@ options:
         the modified lines are pushed to the device in configuration
         mode.  If the replace argument is set to I(block) then the entire
         command block is pushed to the device in configuration mode if any
-        line is not correct
+        line is not correct.
     required: false
     default: line
     choices: ['line', 'block']
@@ -105,7 +105,7 @@ options:
         cause the module to push the contents of I(src) into the device
         without first checking if already configured.
       - Note this argument should be considered deprecated.  To achieve
-        the equivalient, set the match argument to none.  This argument
+        the equivalent, set the C(match=none) which is idempotent.  This argument
         will be removed in a future release.
     required: false
     default: false
@@ -142,7 +142,7 @@ options:
     required: false
     default: null
     version_added: "2.2"
-  default:
+  defaults:
     description:
       - This argument specifies whether or not to collect all defaults
         when getting the remote device running config.  When enabled,
@@ -204,8 +204,8 @@ vars:
 RETURN = """
 updates:
   description: The set of commands that will be pushed to the remote device
-  returned: always
-  type: when lines is defined
+  returned: Only when lines is specified.
+  type: list
   sample: ['...', '...']
 backup_path:
   description: The full path to the backup file
@@ -229,7 +229,7 @@ def check_args(module, warnings):
 def get_config(module, result):
     contents = module.params['config']
     if not contents:
-        defaults = module.params['default']
+        defaults = module.params['defaults']
         contents = module.config.get_config(include_defaults=defaults)
     return NetworkConfig(indent=1, contents=contents)
 
@@ -320,10 +320,10 @@ def main():
         force=dict(default=False, type='bool'),
 
         config=dict(),
-        default=dict(type='bool', default=False),
+        defaults=dict(type='bool', default=False),
 
-        save=dict(type='bool', default=False),
         backup=dict(type='bool', default=False),
+        save=dict(default=False, type='bool'),
     )
 
     mutually_exclusive = [('lines', 'src')]
