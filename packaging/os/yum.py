@@ -584,49 +584,6 @@ def list_stuff(module, repoquerybin, conf_file, stuff):
     else:
         return [ pkg_to_dict(p) for p in sorted(is_installed(module, repoq, stuff, conf_file, qf=is_installed_qf) + is_available(module, repoq, stuff, conf_file, qf=qf)) if p.strip() ]
 
-def remove_list_line_from_file(f):
-    f.seek(0, os.SEEK_END)
-    pos = f.tell() - 1
-    while pos > 0 and f.read(1) != "\n":
-        pos -= 1
-        f.seek(pos, os.SEEK_SET)
-
-    if pos > 0:
-        f.seek(pos, os.SEEK_SET)
-        f.truncate()
-
-is_rpmmacros_file = False
-rpmmacros_initial_size = 0
-
-def activate_excludedoc():
-    global is_rpmmacros_file
-    global rpmmacros_initial_size
-    
-    filename = "/root/.rpmmacros"
-    is_rpmmacros_file = os.path.isfile(filename)
-    
-    rpmmacros_file = open(filename, "a")
-    rpmmacros_initial_size = os.path.getsize(filename)
-    
-    if(rpmmacros_initial_size != 0):
-        rpmmacros_file.write("\n")
-    
-    rpmmacros_file.write("%_excludedocs 1")
-    rpmmacros_file.close()
-    
-def deactivate_excludedoc():
-    rpmmacros_file = open("/root/.rpmmacros", "r+")
-    remove_list_line_from_file(rpmmacros_file)
-    
-    if(not(is_rpmmacros_file)):
-        os.remove("/root/.rpmmacros")
-    else:
-        if(rpmmacros_initial_size == 0):
-            rpmmacros_file.seek(0)
-            rpmmacros_file.truncate()
-        
-    rpmmacros_file.close()
-
 def install(module, items, repoq, yum_basecmd, conf_file, en_repos, dis_repos):
 
     pkgs = []
@@ -726,6 +683,13 @@ def install(module, items, repoq, yum_basecmd, conf_file, en_repos, dis_repos):
         pkgs.append(pkg)
 
     if pkgs:
+        
+        if(module.params['excludedocs']):
+            # Needed for the --tsflags nodocs option.
+            module.run_command(['yum', 'install', "yum-tsflags", '-y'], check_rc=True) 
+            yum_basecmd.append("--tsflags")
+            yum_basecmd.append("nodocs")
+            
         cmd = yum_basecmd + ['install'] + pkgs
 
         if module.check_mode:
@@ -739,15 +703,9 @@ def install(module, items, repoq, yum_basecmd, conf_file, en_repos, dis_repos):
             module.exit_json(changed=True, results=res['results'], changes=dict(installed=pkgs))
 
         changed = True
-        
-        if(module.params['excludedocs']):
-            activate_excludedoc()
 
         lang_env = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C')
         rc, out, err = module.run_command(cmd, environ_update=lang_env)
-
-        if(module.params['excludedocs']):
-            deactivate_excludedoc()
 
         if (rc == 1):
             for spec in items:
