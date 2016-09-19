@@ -126,7 +126,7 @@ options:
     version_added: "2.1"
   excludedocs:
     description:
-      - Install a package without documentation files when state="present".
+      - Install a package without documentation files when state="present". When set to 'yes', the package yum-tsflags needs to be installed.
     required: false
     default: "no"
     choices: ["yes", "no"]
@@ -154,7 +154,7 @@ notes:
     Use the "yum group list" command to see which category of group the group
     you want to install falls into.'
 # informational: requirements for nodes
-requirements: [ yum ]
+requirements: [ yum , yum-tsflags ]
 author:
     - "Ansible Core Team"
     - "Seth Vidal"
@@ -685,8 +685,6 @@ def install(module, items, repoq, yum_basecmd, conf_file, en_repos, dis_repos):
     if pkgs:
         
         if(module.params['excludedocs']):
-            # Needed for the --tsflags nodocs option.
-            module.run_command(['yum', 'install', "yum-tsflags", '-y'], check_rc=True) 
             yum_basecmd.append("--tsflags")
             yum_basecmd.append("nodocs")
             
