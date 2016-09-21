@@ -48,6 +48,14 @@ options:
         choices: [ "yes", "no" ]
         description:
             - If I(yes), indicates that the group created is a system group.
+    non_unique:
+        required: false
+        default: "no"
+        choices: [ "yes", "no" ]
+        description:
+            - Optionally when used with the -g option, this option allows to
+              create groups with a non unique gid.
+        version_added: "2.2"
 
 '''
 
