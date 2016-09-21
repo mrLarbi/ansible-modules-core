@@ -372,6 +372,8 @@ class NetBsdGroup(Group):
         if self.gid is not None:
             cmd.append('-g')
             cmd.append('%d' % int(self.gid))
+            if self.non_unique:
+                cmd.append('-o')
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -382,6 +384,8 @@ class NetBsdGroup(Group):
         if self.gid is not None and int(self.gid) != info[2]:
             cmd.append('-g')
             cmd.append('%d' % int(self.gid))
+            if self.non_unique:
+                cmd.append('-o')
         if len(cmd) == 1:
             return (None, '', '')
         if self.module.check_mode:
