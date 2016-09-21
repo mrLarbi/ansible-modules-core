@@ -105,7 +105,6 @@ class Group(object):
             elif key == 'system' and kwargs[key] == True:
                 cmd.append('-r')
         cmd.append(self.name)
-        self.module.debug(msg=str(cmd))
         return self.execute_command(cmd)
 
     def group_mod(self, **kwargs):
