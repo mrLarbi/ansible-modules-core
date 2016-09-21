@@ -292,6 +292,7 @@ class DarwinGroup(Group):
             cmd += [ '-i', self.gid ]
         cmd += [ '-L', self.name ]
         (rc, out, err) = self.execute_command(cmd)
+        #FIXME : Add a support of non_unique with dseditgroup ?
         return (rc, out, err)
 
     def group_del(self):
@@ -310,6 +311,7 @@ class DarwinGroup(Group):
                 cmd += [ '-i', gid ]
             cmd += [ '-L', self.name ]
             (rc, out, err) = self.execute_command(cmd)
+            #FIXME : Add a support of non_unique with dseditgroup ?
             return (rc, out, err)
         return (None, '', '')
 
