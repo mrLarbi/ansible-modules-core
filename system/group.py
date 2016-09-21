@@ -202,6 +202,7 @@ class AIX(Group):
                 cmd.append('id='+kwargs[key])
             elif key == 'system' and kwargs[key] == True:
                 cmd.append('-a')
+            #FIXME : Add a support of non_unique with mkgroup ?
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -212,6 +213,7 @@ class AIX(Group):
             if key == 'gid':
                 if kwargs[key] is not None and info[2] != int(kwargs[key]):
                     cmd.append('id='+kwargs[key])
+            #FIXME : Add a support of non_unique with chgroup ?
         if len(cmd) == 1:
             return (None, '', '')
         if self.module.check_mode:
